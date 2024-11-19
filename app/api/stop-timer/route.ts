@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       // TODO: Call the stopTimer function (from "@/actions") to stop the timer
       // get the user ID from the event data
 
-      revalidatePath("/leaderboard");
+      revalidatePath("/");
     }
   } catch (err) {
     if (err instanceof Error) {
