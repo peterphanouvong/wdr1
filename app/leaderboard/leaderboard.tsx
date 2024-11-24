@@ -62,7 +62,6 @@ export async function Leaderboard() {
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Time</TableHead>
-                <TableHead className="text-right">Date</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -80,18 +79,13 @@ export async function Leaderboard() {
                   );
                   return (
                     <TableRow key={session.id}>
-                      <TableCell className="font-medium">
-                        #{index + 1}
-                      </TableCell>
+                      <TableCell className="font-medium">{index + 1}</TableCell>
                       <TableCell>{session.name || "Anonymous"}</TableCell>
                       <TableCell className="font-mono">
                         {session.email || "-"}
                       </TableCell>
                       <TableCell className="font-mono">
                         {formatTime(duration)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {new Date(session.start_time).toLocaleDateString()}
                       </TableCell>
                     </TableRow>
                   );
