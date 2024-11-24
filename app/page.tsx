@@ -4,6 +4,7 @@ import { Leaderboard } from "./leaderboard/leaderboard";
 import { LoginButton } from "./LoginButton";
 import { LogoutButton } from "./LogoutButton";
 import { Timer } from "./timer";
+
 export default async function Page() {
   const { getUser } = getKindeServerSession();
   const user = await getUser();

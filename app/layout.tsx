@@ -1,5 +1,6 @@
 // TODO: Wrap the entire app in the AuthProvider
 // https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdk/#set-up-the-kinde-auth-provider
+import { AuthProvider } from "./auth-provider";
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";

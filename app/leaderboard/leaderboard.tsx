@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RefreshButton } from "./refresh-button";
 
 const supabase = await createClient();
 
@@ -50,6 +51,9 @@ export async function Leaderboard() {
         <CardTitle>Leaderboard</CardTitle>
       </CardHeader>
       <CardContent>
+        <div className="mb-4">
+          <RefreshButton />
+        </div>
         <div className="rounded-md border">
           <Table>
             <TableHeader>
