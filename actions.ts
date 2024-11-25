@@ -7,7 +7,7 @@ import { Users, init } from "@kinde/management-api-js";
 type TimerSession = {
   id: string;
   start_time: string;
-  stop_time: string | null;
+  end_time: string | null;
 };
 
 export async function getTimer() {
@@ -118,4 +118,29 @@ export async function stopTimer({
 
   revalidatePath("/", "layout");
   return stopTime;
+}
+
+export const getMostRecentSession = async () => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("timer-sessions")
+    .select("*")
+    .not("end_time", "is", null)
+    .order("start_time", { ascending: false })
+    .limit(1);
+
+  if (error) throw error;
+  return data[0] as TimerSession;
+};
+
+export async function getLeaderboardData() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("timer-sessions")
+    .select("*")
+    .not("end_time", "is", null)
+    .order("end_time", { ascending: true });
+
+  if (error) throw error;
+  return data;
 }

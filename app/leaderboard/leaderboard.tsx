@@ -1,99 +1,62 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import { getLeaderboardData } from "@/actions";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshButton } from "./refresh-button";
-
-const supabase = await createClient();
-
-async function getLeaderboardData() {
-  const { data, error } = await supabase
-    .from("timer-sessions")
-    .select("*")
-    .not("end_time", "is", null)
-    .order("end_time", { ascending: true })
-    .limit(10);
-
-  if (error) throw error;
-  return data;
-}
-
-function calculateDuration(start: string, end: string) {
-  const startTime = new Date(start).getTime();
-  const endTime = new Date(end).getTime();
-  return endTime - startTime; // Duration in ms
-}
-
-function formatTime(milliseconds: number) {
-  const mins = Math.floor(milliseconds / 60000);
-  const secs = Math.floor((milliseconds % 60000) / 1000);
-  const millis = milliseconds % 1000;
-
-  return `${mins.toString().padStart(2, "0")}:${secs
-    .toString()
-    .padStart(2, "0")}.${millis.toString().padStart(3, "0")}`;
-}
+  Command,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { calculateDuration, formatTime, ordinalSuffixOf } from "@/lib/utils";
+import { LeftOrnamentIcon, RightOrnamentIcon } from "./ornament-icon";
 
 export async function Leaderboard() {
   const leaderboardData = await getLeaderboardData();
 
   return (
-    <Card className="mt-8">
-      <CardHeader>
-        <CardTitle>Leaderboard</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-4">
-          <RefreshButton />
+    <div>
+      <Command>
+        <div className="border rounded-lg overflow-hidden max-w-md w-full mx-auto mb-12">
+          <CommandInput
+            className="border-none"
+            placeholder="Search by competitor"
+          ></CommandInput>
         </div>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[80px]">Rank</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Time</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {leaderboardData
-                .sort((a, b) => {
-                  return (
-                    calculateDuration(a.start_time, a.end_time) -
-                    calculateDuration(b.start_time, b.end_time)
-                  );
-                })
-                .map((session, index) => {
-                  const duration = calculateDuration(
-                    session.start_time,
-                    session.end_time
-                  );
-                  return (
-                    <TableRow key={session.id}>
-                      <TableCell className="font-medium">{index + 1}</TableCell>
-                      <TableCell>{session.name || "Anonymous"}</TableCell>
-                      <TableCell className="font-mono">
-                        {session.email || "-"}
-                      </TableCell>
-                      <TableCell className="font-mono">
-                        {formatTime(duration)}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+        <CommandList className="max-w-[700px] w-full py-4 mx-auto">
+          {leaderboardData
+            .sort((a, b) => {
+              return (
+                calculateDuration(a.start_time, a.end_time) -
+                calculateDuration(b.start_time, b.end_time)
+              );
+            })
+            .map((session, index) => {
+              const duration = calculateDuration(
+                session.start_time,
+                session.end_time
+              );
+              return (
+                <CommandItem key={session.id} className="w-full">
+                  <div className="justify-between flex items-center py-4 gap-2 w-full font-medium">
+                    <div className="flex gap-16 items-center">
+                      <div className="flex items-center justify-center text-center w-20 text-sm">
+                        {index === 0 && <LeftOrnamentIcon />}
+                        <span className="pb-1">
+                          {ordinalSuffixOf(index + 1)}
+                        </span>
+                        {index === 0 && <RightOrnamentIcon />}
+                      </div>
+                      <div className="flex-shrink text-xl">
+                        {session.name || "Anonymous"}
+                      </div>
+                    </div>
+                    <div className="text-xl">{formatTime(duration)}</div>
+                  </div>
+                </CommandItem>
+              );
+            })}
+        </CommandList>
+      </Command>
+    </div>
   );
 }
