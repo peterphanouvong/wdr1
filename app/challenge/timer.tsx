@@ -1,14 +1,36 @@
 "use client";
-
-import { getTimer, startTimer } from "@/actions";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { getMostRecentSession, getTimer } from "@/actions";
+import { calculateDuration } from "@/lib/utils";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export const Timer = () => {
+  const searchParams = useSearchParams();
+
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
+  const [isRunning, setIsRunning] = useState(!searchParams.has("login"));
+  const [isLoading, setIsLoading] = useState(true);
+  const [finalTime, setFinalTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    const initFinalTime = async () => {
+      const mostRecentSession = await getMostRecentSession();
+      if (!mostRecentSession) {
+        return;
+      }
+      setFinalTime(
+        formatTime(
+          calculateDuration(
+            mostRecentSession.start_time,
+            mostRecentSession.end_time!
+          )
+        )
+      );
+    };
+
+    initFinalTime();
+  }, []);
 
   useEffect(() => {
     const initTimer = async () => {
@@ -31,6 +53,7 @@ export const Timer = () => {
     };
 
     initTimer();
+    setIsLoading(false);
   }, [sessionId]);
 
   useEffect(() => {
@@ -45,37 +68,27 @@ export const Timer = () => {
     return () => clearInterval(interval);
   }, [isRunning]);
 
-  const handleStart = async () => {
-    const newSession = await startTimer();
-    setSessionId(newSession.id);
-  };
-
   function formatTime(milliseconds: number) {
     const mins = Math.floor(milliseconds / 60000);
     const secs = Math.floor((milliseconds % 60000) / 1000);
     const millis = milliseconds % 1000;
 
-    return `${mins.toString().padStart(2, "0")}:${secs
+    return `${mins.toString().padStart(2, "0")}.${secs
       .toString()
       .padStart(2, "0")}.${millis.toString().padStart(2, "0")}`;
   }
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
   return (
-    <div className="flex items-center justify-center bg-gray-50">
-      <Card className="w-96">
-        <CardHeader></CardHeader>
-        <CardContent>
-          <div className="text-6xl font-mono text-center mb-8">
-            {formatTime(elapsed)}
-          </div>
-
-          {!sessionId && (
-            <Button className="w-full" onClick={handleStart}>
-              Start challenge
-            </Button>
-          )}
-        </CardContent>
-      </Card>
+    <div>
+      <p className="text-lg tracking-tight mt-24">
+        {isRunning ? "The clock is running" : "Your time was"}
+      </p>
+      <p className="text-[180px] leading-[175px] tracking-tighter mt-4 font-mono ">
+        {isRunning ? formatTime(elapsed) : finalTime}
+      </p>
     </div>
   );
 };
