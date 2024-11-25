@@ -1,7 +1,8 @@
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { Leaderboard } from "./leaderboard/leaderboard";
 import { StartChallengeButton } from "./start-challenge-button";
 
-const Hero = () => {
+const Hero = (props: { isLoggedIn: boolean }) => {
   return (
     <div className="text-center pb-32">
       <h2 className="text-[180px] leading-[175px] tracking-tight font-medium">
@@ -18,7 +19,7 @@ const Hero = () => {
         Ready for round 1?
       </p>
       <div className="mt-12">
-        <StartChallengeButton />
+        <StartChallengeButton isLoggedIn={props.isLoggedIn} />
       </div>
 
       <hr className="mt-32" />
@@ -32,9 +33,11 @@ const Hero = () => {
 };
 
 export default async function Page() {
+  const { getUser } = getKindeServerSession();
+  const user = await getUser();
   return (
     <div className="min-h-screen pt-32">
-      <Hero />
+      <Hero isLoggedIn={!!user} />
     </div>
   );
 }
